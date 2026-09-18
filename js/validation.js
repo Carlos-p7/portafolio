@@ -64,3 +64,88 @@ function validateContactForm(data) {
     errors,
   };
 }
+
+
+// ============================================================
+// Validación de la solicitud de cotización
+// ============================================================
+//
+// El formulario ya no es solo "mensaje": ahora trae la lista de servicios
+// que el visitante agregó a su caja de cotización. La decisión de negocio es
+// QUÉ cuenta como una solicitud que vale la pena recibir.
+//
+// Contrato:
+//   Entra:  data = {
+//             name:     string,
+//             email:    string,
+//             message:  string,    // texto libre, puede venir vacío
+//             services: string[],  // ids del catálogo, ya sin duplicados
+//           }                      // (puede venir vacío: [])
+//
+//   Sale:   { valid: boolean, errors: Record<string, string> }
+//           (mismo formato que validateContactForm)
+//
+//   Reglas del contrato:
+//     - name y email: exactamente las mismas reglas que validateContactForm.
+//     - Debe quedar claro QUÉ quiere cotizar. Hay dos caminos válidos:
+//         a) eligió al menos un servicio  → message pasa a ser OPCIONAL
+//         b) no eligió ninguno            → message es OBLIGATORIO, mínimo 10
+//            caracteres útiles (es un proyecto fuera del catálogo)
+//     - message nunca puede pasar de 500 caracteres (sin espacios extremos),
+//       venga o no con servicios.
+//     - Si falla la regla de "qué quiere cotizar" o el largo, el error va en
+//       errors.message (es el campo donde el usuario puede corregirlo).
+//
+// Ejemplo análogo ya resuelto: validateContactForm() aquí arriba. Fíjate que
+// ya resuelve name y email — ¿tienes que copiar esas reglas, o puedes
+// aprovechar su resultado?
+//
+// Casos que debe pasar (pégalos en la consola del navegador):
+//
+//   validateQuoteForm({ name: "Ana", email: "ana@correo.com", message: "", services: ["tienda-en-linea"] })
+//     → { valid: true, errors: {} }                       (servicio sin mensaje: OK)
+//
+//   validateQuoteForm({ name: "Ana", email: "ana@correo.com", message: "", services: [] })
+//     → { valid: false, errors: { message: "..." } }      (no pidió nada)
+//
+//   validateQuoteForm({ name: "Ana", email: "ana@correo.com", message: "App de reservas para mi gimnasio", services: [] })
+//     → { valid: true, errors: {} }                       (proyecto fuera del catálogo)
+//
+//   validateQuoteForm({ name: "Ana", email: "ana@correo.com", message: "   hola   ", services: [] })
+//     → { valid: false, errors: { message: "..." } }      (4 caracteres útiles)
+//
+//   validateQuoteForm({ name: "Ana", email: "ana@correo.com", message: "x".repeat(501), services: ["whatsapp"] })
+//     → { valid: false, errors: { message: "..." } }      (demasiado largo aunque traiga servicio)
+//
+//   validateQuoteForm({ name: "", email: "nop", message: "", services: [] })
+//     → { valid: false, errors: { name: "...", email: "...", message: "..." } }
+//
+
+/**
+ * Valida una solicitud de cotización (servicios del catálogo y/o texto libre).
+ * @param {{name: string, email: string, message: string, services: string[]}} data
+ * @returns {{valid: boolean, errors: Record<string, string>}}
+ */
+function validateQuoteForm(data) {
+  const errors = {};
+
+  // name y email: se reutiliza la validación del formulario de contacto
+  const base = validateContactForm(data);
+  if (base.errors.name) errors.name = base.errors.name;
+  if (base.errors.email) errors.email = base.errors.email;
+
+  const message = (data.message || "").trim();
+  const hasServices = Array.isArray(data.services) && data.services.length > 0;
+
+  if (message.length > 500) {
+    errors.message = "El mensaje no puede pasar de 500 caracteres.";
+  } else if (!hasServices && message.length < 10) {
+    errors.message =
+      "Agrega al menos un servicio del catálogo o describe tu proyecto (mínimo 10 caracteres).";
+  }
+
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors,
+  };
+}

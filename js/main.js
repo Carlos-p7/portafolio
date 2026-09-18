@@ -11,49 +11,29 @@ document.getElementById("navLinks").addEventListener("click", (e) => {
   if (e.target.tagName === "A") navbar.classList.remove("is-open");
 });
 
-// ---- Catálogo de servicios ----
-const grid = document.getElementById("servicesGrid");
-const filtersEl = document.getElementById("filters");
-const categories = ["Todos", ...new Set(SERVICES.map((s) => s.category))];
-let activeCategory = "Todos";
+// ---- Modo día / noche ----
+// El tema inicial lo pone el <script> del <head> (preferencia guardada o la
+// del sistema); aquí solo se alterna y se recuerda.
+const themeToggle = document.getElementById("themeToggle");
+const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 
-function renderFilters() {
-  filtersEl.innerHTML = categories
-    .map(
-      (cat) =>
-        `<button class="filter-btn${cat === activeCategory ? " is-active" : ""}" data-category="${cat}">${cat}</button>`
-    )
-    .join("");
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  const next = theme === "dark" ? "claro" : "oscuro";
+  themeToggle.setAttribute("aria-label", `Cambiar a modo ${next}`);
+  themeColorMeta.setAttribute("content", theme === "dark" ? "#0a0a0a" : "#faf8f5");
 }
 
-function renderServices() {
-  const items =
-    activeCategory === "Todos"
-      ? SERVICES
-      : SERVICES.filter((s) => s.category === activeCategory);
-
-  grid.innerHTML = items
-    .map(
-      (s) => `
-      <article class="service-card">
-        <div class="service-card__icon">${s.icon}</div>
-        <h3>${s.title}</h3>
-        <p>${s.description}</p>
-      </article>`
-    )
-    .join("");
-}
-
-filtersEl.addEventListener("click", (e) => {
-  const btn = e.target.closest(".filter-btn");
-  if (!btn) return;
-  activeCategory = btn.dataset.category;
-  renderFilters();
-  renderServices();
+themeToggle.addEventListener("click", () => {
+  const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  applyTheme(next);
+  try {
+    localStorage.setItem("theme", next);
+  } catch {
+    // storage bloqueado: el tema dura solo esta visita
+  }
 });
-
-renderFilters();
-renderServices();
+applyTheme(document.documentElement.getAttribute("data-theme"));
 
 // ---- Formulario de contacto ----
 // Entrega real vía Web3Forms (sin backend propio): https://web3forms.com
@@ -64,6 +44,26 @@ const WEB3FORMS_ACCESS_KEY = "19d29d90-b69a-4c5e-9bf6-0d98d89c18b9";
 const form = document.getElementById("contactForm");
 const successEl = document.getElementById("formSuccess");
 const submitBtn = form.querySelector('button[type="submit"]');
+const SUBMIT_LABEL = submitBtn.textContent;
+const formServicesEl = document.getElementById("formServices");
+const formServicesEmptyEl = document.getElementById("formServicesEmpty");
+
+// Refleja la caja de cotización dentro del formulario (con opción de quitar)
+function renderFormServices(ids) {
+  formServicesEmptyEl.hidden = ids.length > 0;
+  formServicesEl.innerHTML = ids
+    .map((id) => {
+      const s = findService(id);
+      return `<li class="form-services__item">${s.title}<button type="button" data-remove="${id}" aria-label="Quitar ${s.title}">×</button></li>`;
+    })
+    .join("");
+}
+formServicesEl.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-remove]");
+  if (btn) Quote.remove(btn.dataset.remove);
+});
+Quote.onChange(renderFormServices);
+renderFormServices(Quote.list());
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -72,19 +72,16 @@ form.addEventListener("submit", async (e) => {
     name: form.elements.name.value,
     email: form.elements.email.value,
     message: form.elements.message.value,
+    services: Quote.list(),
   };
 
   form.querySelectorAll(".form-error").forEach((el) => (el.textContent = ""));
   successEl.hidden = true;
   successEl.classList.remove("is-error");
 
-  const result = validateContactForm(data);
+  const result = validateQuoteForm(data);
 
-  if (!result || !result.valid) {
-    if (!result) {
-      console.warn("validateContactForm todavía no está implementada (js/validation.js).");
-      return;
-    }
+  if (!result.valid) {
     Object.entries(result.errors).forEach(([field, message]) => {
       const errorEl = form.querySelector(`[data-error-for="${field}"]`);
       if (errorEl) errorEl.textContent = message;
@@ -101,8 +98,13 @@ form.addEventListener("submit", async (e) => {
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
         access_key: WEB3FORMS_ACCESS_KEY,
-        subject: `Nuevo mensaje de ${data.name} — portafolio`,
-        ...data,
+        subject: `Solicitud de cotización de ${data.name} — portafolio`,
+        name: data.name,
+        email: data.email,
+        "Servicios solicitados": data.services.length
+          ? data.services.map((id) => "• " + findService(id).title).join("\n")
+          : "Ninguno del catálogo (ver mensaje)",
+        message: data.message.trim() || "(sin mensaje adicional)",
       }),
     });
     const result2 = await response.json();
@@ -111,6 +113,7 @@ form.addEventListener("submit", async (e) => {
       successEl.textContent = "¡Gracias! Tu mensaje fue enviado.";
       successEl.hidden = false;
       form.reset();
+      Quote.clear();
     } else {
       throw new Error(result2.message || "Error desconocido");
     }
@@ -121,6 +124,6 @@ form.addEventListener("submit", async (e) => {
     successEl.hidden = false;
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = "Enviar mensaje";
+    submitBtn.textContent = SUBMIT_LABEL;
   }
 });
