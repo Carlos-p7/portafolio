@@ -27,6 +27,7 @@ const ICONS = {
   db: '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3.2"/><path d="M4 6v12c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2V6"/><path d="M4 12c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2"/></svg>',
   target: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".9" fill="currentColor"/></svg>',
   trend: '<svg viewBox="0 0 24 24"><path d="M3 16l5-5 4 3.5L21 6"/><path d="M15 6h6v6"/></svg>',
+  bot: '<svg viewBox="0 0 24 24"><rect x="4" y="7.5" width="16" height="12" rx="3"/><path d="M12 7.5V4"/><circle cx="12" cy="3.4" r=".9"/><circle cx="9" cy="13.2" r="1.1"/><circle cx="15" cy="13.2" r="1.1"/><path d="M9.5 16.6h5M2 12.5v3M22 12.5v3"/></svg>',
   brain: '<svg viewBox="0 0 24 24"><path d="M9.5 4a3 3 0 00-3 3 3 3 0 00-1.5 5.5A3 3 0 007 17a3 3 0 005 1.2V5.5A2.5 2.5 0 009.5 4z"/><path d="M14.5 4a3 3 0 013 3 3 3 0 011.5 5.5A3 3 0 0117 17a3 3 0 01-5 1.2"/></svg>',
 };
 
@@ -90,6 +91,13 @@ const CATALOG = [
         lead: "Una app que se instala desde el navegador, sin pasar por tiendas de aplicaciones.",
         description: "Aplicación instalable en Android e iOS directamente desde el navegador, con funcionamiento parcial sin internet y notificaciones.",
         includes: ["Pantallas pensadas para uso táctil", "Instalación desde el navegador", "Uso sin conexión en las pantallas clave", "Notificaciones (donde el celular lo permite)", "Sincronización con tu sistema actual"],
+      },
+      {
+        id: "chatbot", icon: "bot",
+        title: "Asistente virtual que responde a tus clientes",
+        lead: "Un chat en tu sitio que contesta dudas al instante, de día y de noche.",
+        description: "Asistente con inteligencia artificial que aprende de la información de tu negocio (servicios, precios, horarios, preguntas frecuentes) y atiende a tus visitantes en tu página web. Cuando no sabe algo, te pasa la conversación.",
+        includes: ["Respuestas basadas en la información de tu negocio", "Chat integrado en tu sitio web", "Captura de datos del interesado (nombre, correo, celular)", "Paso a una persona cuando hace falta", "Historial de conversaciones para ti", "Ajustes de tono y respuestas"],
       },
     ],
   },
@@ -216,7 +224,7 @@ const CATALOG = [
 function findService(id) {
   for (const area of CATALOG) {
     const item = area.items.find((it) => it.id === id);
-    if (item) return { ...item, area: area.name };
+    if (item) return { ...item, area: area.name, areaId: area.id };
   }
   return undefined;
 }

@@ -1,4 +1,4 @@
--<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -71,7 +71,6 @@
         <p class="hero__tagline">Transformo problemas de negocio en soluciones tecnológicas.</p>
         <div class="hero__cta">
           <a href="#servicios" class="btn btn--primary">Ver servicios</a>
-          <a href="CV-Carlos-Gutierrez-actualizado.pdf" class="btn btn--ghost" download>Descargar CV</a>
         </div>
       </div>
       <div class="hero__media">
@@ -108,7 +107,16 @@
       <p class="section-subtitle">Agrega a tu cotización los servicios que te interesen y envíamelos desde el formulario de contacto. ¿Tu proyecto no aparece? También puedes describirlo ahí.</p>
 
       <div class="filters" id="filters" role="group" aria-label="Filtrar por área"></div>
-      <div id="catalog"></div>
+      <div class="carousel" id="carousel" role="region" aria-roledescription="carrusel" aria-label="Servicios">
+        <button type="button" class="carousel__nav carousel__nav--prev" id="carPrev" aria-label="Servicio anterior">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <div class="carousel__viewport" id="catalog" tabindex="0"></div>
+        <button type="button" class="carousel__nav carousel__nav--next" id="carNext" aria-label="Servicio siguiente">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <p class="carousel__status" id="carStatus" aria-live="polite"></p>
+      </div>
     </div>
   </section>
 
@@ -236,6 +244,11 @@
           <span class="form-error" data-error-for="email"></span>
         </div>
         <div class="form-field">
+          <label for="phone">Celular</label>
+          <input type="tel" id="phone" name="phone" inputmode="tel" autocomplete="tel" placeholder="722 123 4567" />
+          <span class="form-error" data-error-for="phone"></span>
+        </div>
+        <div class="form-field">
           <span class="form-field__label">Servicios a cotizar</span>
           <ul class="form-services" id="formServices"></ul>
           <p class="form-services__empty" id="formServicesEmpty">
@@ -256,17 +269,19 @@
 </main>
 
 <!-- Caja de cotización (flotante) -->
-<aside class="quote-box" id="quoteBox" hidden>
-  <div class="quote-box__panel" id="quotePanel" hidden>
-    <p class="quote-box__heading">Tu cotización</p>
-    <ul class="quote-box__list" id="quoteList"></ul>
-    <button type="button" class="btn btn--primary btn--sm btn--block" id="quoteGo">Solicitar cotización</button>
-  </div>
+<aside class="quote-box" id="quoteBox" aria-label="Mi cotización" hidden>
   <button type="button" class="quote-box__toggle" id="quoteToggle" aria-expanded="false" aria-controls="quotePanel">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h10M9 12h10M9 19h10"/><path d="M4 5h.01M4 12h.01M4 19h.01"/></svg>
-    Mi cotización
-    <span class="quote-box__count" id="quoteCount">0</span>
+    <span class="quote-box__head">
+      <span class="quote-box__title">Mi cotización</span>
+      <span class="quote-box__count" id="quoteCount">0</span>
+      <svg class="quote-box__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+    </span>
+    <span class="quote-box__icons" id="quoteIcons" aria-hidden="true"></span>
   </button>
+  <div class="quote-box__panel" id="quotePanel" hidden>
+    <ul class="quote-box__list" id="quoteList"></ul>
+  </div>
+  <button type="button" class="btn btn--primary btn--sm btn--block quote-box__go" id="quoteGo">Solicitar<span class="quote-box__go-long"> cotización</span> →</button>
 </aside>
 
 <!-- Detalle de servicio -->
@@ -299,6 +314,19 @@
 <script src="js/utils.js"></script>
 <script src="js/catalog-data.js"></script>
 <script src="js/quote.js"></script>
+<script src="js/sales-summary.js"></script>
+<script src="js/linear-trend.js"></script>
+<script src="js/demos/shared.js"></script>
+<script src="js/demos/chat.js"></script>
+<script src="js/demos/dashboard.js"></script>
+<script src="js/demos/shop.js"></script>
+<script src="js/demos/automation.js"></script>
+<script src="js/demos/website.js"></script>
+<script src="js/demos/phone-app.js"></script>
+<script src="js/demos/invoice.js"></script>
+<script src="js/demos/data-quality.js"></script>
+<script src="js/demos/forecast.js"></script>
+<script src="js/demos/index.js"></script>
 <script src="js/catalog.js"></script>
 <script src="js/validation.js"></script>
 <script src="js/main.js"></script>

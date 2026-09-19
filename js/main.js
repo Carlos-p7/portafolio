@@ -54,7 +54,7 @@ function renderFormServices(ids) {
   formServicesEl.innerHTML = ids
     .map((id) => {
       const s = findService(id);
-      return `<li class="form-services__item">${s.title}<button type="button" data-remove="${id}" aria-label="Quitar ${s.title}">×</button></li>`;
+      return `<li class="form-services__item" data-area="${s.areaId}"><span class="form-services__ico">${ICONS[s.icon]}</span>${s.title}<button type="button" data-remove="${id}" aria-label="Quitar ${s.title}">×</button></li>`;
     })
     .join("");
 }
@@ -71,6 +71,7 @@ form.addEventListener("submit", async (e) => {
   const data = {
     name: form.elements.name.value,
     email: form.elements.email.value,
+    phone: form.elements.phone.value,
     message: form.elements.message.value,
     services: Quote.list(),
   };
@@ -101,6 +102,7 @@ form.addEventListener("submit", async (e) => {
         subject: `Solicitud de cotización de ${data.name} — portafolio`,
         name: data.name,
         email: data.email,
+        Celular: validatePhone(data.phone).value,
         "Servicios solicitados": data.services.length
           ? data.services.map((id) => "• " + findService(id).title).join("\n")
           : "Ninguno del catálogo (ver mensaje)",

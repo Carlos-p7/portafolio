@@ -123,7 +123,7 @@ function validateContactForm(data) {
 
 /**
  * Valida una solicitud de cotización (servicios del catálogo y/o texto libre).
- * @param {{name: string, email: string, message: string, services: string[]}} data
+ * @param {{name: string, email: string, phone: string, message: string, services: string[]}} data
  * @returns {{valid: boolean, errors: Record<string, string>}}
  */
 function validateQuoteForm(data) {
@@ -133,6 +133,9 @@ function validateQuoteForm(data) {
   const base = validateContactForm(data);
   if (base.errors.name) errors.name = base.errors.name;
   if (base.errors.email) errors.email = base.errors.email;
+
+  const phone = validatePhone(data.phone);
+  if (!phone.valid) errors.phone = phone.error;
 
   const message = (data.message || "").trim();
   const hasServices = Array.isArray(data.services) && data.services.length > 0;
@@ -148,4 +151,82 @@ function validateQuoteForm(data) {
     valid: Object.keys(errors).length === 0,
     errors,
   };
+}
+
+
+// ============================================================
+// HAND-OFF PARA CARLOS — celular del formulario
+// ============================================================
+//
+// La gente escribe su número como se le ocurre: "722 123 4567",
+// "(722) 123-45-67", "+52 722 123 4567", "527221234567"... Tu trabajo es
+// decidir cuáles aceptar y guardarlos TODOS en un mismo formato, para que al
+// recibir la cotización puedas marcar o abrir WhatsApp sin pensarlo.
+// (Es tu primera "limpieza de datos": normalizar una entrada sucia.)
+//
+// Contrato:
+//   Entra:  value — string tal cual viene del <input> (puede venir vacío,
+//           con espacios, guiones, puntos, paréntesis o prefijo +52 / 52)
+//
+//   Sale:   válido   → { valid: true,  value: "7221234567" }  (10 dígitos, sin nada más)
+//           inválido → { valid: false, error: "mensaje para el usuario" }
+//
+//   Reglas:
+//     - Es obligatorio: vacío o solo espacios → inválido.
+//     - Separadores permitidos (se ignoran): espacio - . ( )
+//     - Prefijo de país opcional: "+52" o "52" al inicio, solo si después
+//       quedan exactamente 10 dígitos.
+//     - Cualquier otro carácter (letras, otro "+" en medio...) → inválido.
+//     - Al final debe quedar exactamente 10 dígitos (número de México).
+//
+// Ejemplo análogo ya resuelto: validateContactForm() arriba — usa un regex
+// con .test() para decidir si el email tiene forma válida. Aquí además
+// necesitas TRANSFORMAR el texto antes de revisarlo. Pista: String.replace()
+// con un regex y la bandera /g quita todas las coincidencias, no solo la primera.
+//
+// Casos que debe pasar (pégalos en la consola del navegador):
+//   validatePhone("722 406 6705")          → { valid: true, value: "7224066705" }
+//   validatePhone("(722) 406-67-05")       → { valid: true, value: "7224066705" }
+//   validatePhone("+52 722 406 6705")      → { valid: true, value: "7224066705" }
+//   validatePhone("527224066705")          → { valid: true, value: "7224066705" }
+//   validatePhone("  722.406.6705  ")      → { valid: true, value: "7224066705" }
+//   validatePhone("")                      → { valid: false, error: "..." }
+//   validatePhone("722 406 67")            → { valid: false, error: "..." }  (8 dígitos)
+//   validatePhone("722-ABC-6705")          → { valid: false, error: "..." }
+//   validatePhone("+1 722 406 6705")       → { valid: false, error: "..." }  (no es +52)
+//   validatePhone("5272240667051")         → { valid: false, error: "..." }  (sobran dígitos)
+//
+/**
+ * Valida y normaliza un celular de México a 10 dígitos.
+ * @param {string} value
+ * @returns {{valid: true, value: string} | {valid: false, error: string}}
+ */
+function validatePhone(value) {
+  const raw = String(value || "").trim();
+
+  if (raw === "") {
+    return { valid: false, error: "Ingresa tu número de celular." };
+  }
+
+  // Solo se permiten dígitos, espacios, paréntesis, punto, guion y "+"
+  if (/[^\d\s().+-]/.test(raw)) {
+    return { valid: false, error: "Usa solo números (puedes separarlos con espacios o guiones)." };
+  }
+
+  // Quita los separadores: "(722) 406-67-05" → "7224066705"
+  let digits = raw.replace(/[\s().-]/g, "");
+
+  // Quita el prefijo de país si viene
+  if (digits.startsWith("+52")) {
+    digits = digits.slice(3);
+  } else if (digits.startsWith("52") && digits.length === 12) {
+    digits = digits.slice(2);
+  }
+
+  // Lo que queda deben ser exactamente 10 dígitos
+  if (!/^\d{10}$/.test(digits)) {
+    return { valid: false, error: "Ingresa un celular de México de 10 dígitos." };
+  }
+
+  return { valid: true, value: digits };
 }
