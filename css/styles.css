@@ -1415,33 +1415,8 @@ body.locked { overflow: hidden; }
   font-size: 0.8rem;
 }
 
-/* Projects */
-.projects { padding: 90px 0; background: var(--bg-alt); }
-.project-card {
-  background: var(--card);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius);
-  padding: 32px;
-  max-width: 760px;
-  margin: 0 auto;
-}
-.project-card__badge {
-  display: inline-block;
-  color: var(--accent-ink);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-}
-.project-card h3 { margin: 0 0 12px; font-size: 1.3rem; }
-.project-card__list { color: var(--text-muted); padding-left: 20px; margin: 0 0 20px; }
-.project-card__list li { margin-bottom: 8px; }
-.project-card__stack { display: flex; flex-wrap: wrap; gap: 8px; }
-.projects__note { text-align: center; color: var(--text-muted); margin-top: 32px; font-size: 0.9rem; }
-
 /* Contact */
-.contact { padding: 90px 0; }
+.contact { padding: 90px 0; background: var(--bg-alt); }
 .contact__inner {
   display: grid;
   grid-template-columns: 1fr 1fr;
