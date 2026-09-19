@@ -5,8 +5,6 @@
   const filtersEl = document.getElementById("filters");
   const statusEl = document.getElementById("carStatus");
   const total = CATALOG.reduce((n, area) => n + area.items.length, 0);
-  // En celular el carrusel es vertical: cambia el eje del swipe y de las flechas
-  const vertical = window.matchMedia("(max-width: 640px)");
   let activeArea = "all";
   let active = 0;
   let cards = [];
@@ -93,10 +91,8 @@
   document.getElementById("carNext").addEventListener("click", () => go(1));
 
   catalogEl.addEventListener("keydown", (e) => {
-    const back = vertical.matches ? "ArrowUp" : "ArrowLeft";
-    const fwd = vertical.matches ? "ArrowDown" : "ArrowRight";
-    if (e.key === back) go(-1);
-    else if (e.key === fwd) go(1);
+    if (e.key === "ArrowLeft") go(-1);
+    else if (e.key === "ArrowRight") go(1);
     else return;
     e.preventDefault();
   });
@@ -109,12 +105,15 @@
   });
   catalogEl.addEventListener("pointerup", (e) => {
     if (!start) return;
-    const d = vertical.matches ? e.clientY - start.y : e.clientX - start.x;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
     start = null;
-    if (Math.abs(d) < SWIPE_MIN) return;
+    // Solo cuenta como swipe si fue claramente de lado: un gesto vertical o
+    // diagonal es la persona bajando la página, no cambiando de tarjeta
+    if (Math.abs(dx) < SWIPE_MIN || Math.abs(dx) < Math.abs(dy) * 1.5) return;
     swiped = true; // evita que el "click" que sigue al swipe abra el detalle
     setTimeout(() => (swiped = false), 0);
-    go(d < 0 ? 1 : -1);
+    go(dx < 0 ? 1 : -1);
   });
   catalogEl.addEventListener("pointercancel", () => (start = null));
 

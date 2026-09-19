@@ -353,7 +353,7 @@ a { color: inherit; text-decoration: none; }
   position: relative;
   height: calc(var(--card-h) + 40px);
   overflow: hidden;
-  touch-action: pan-y; /* en PC el swipe es horizontal; el scroll vertical sigue libre */
+  touch-action: pan-y; /* el swipe de lado es del carrusel; el vertical, de la página */
   user-select: none;
   border-radius: var(--radius);
   outline-offset: 4px;
@@ -1604,26 +1604,27 @@ body.locked { overflow: hidden; }
   .back-head { padding: 16px 16px 14px; }
   .back-body { padding: 16px; }
 
-  /* Carrusel vertical con tarjetas cuadradas */
+  /* Carrusel horizontal con tarjetas cuadradas. El deslizamiento vertical
+     queda libre para bajar la página (touch-action: pan-y del escritorio);
+     las flechas bajan a una fila con el contador. */
   .carousel {
-    --card-w: min(260px, 70vw);
+    --card-w: min(250px, 68vw);
     --card-h: var(--card-w);
-    grid-template-columns: 1fr;
-    justify-items: center;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "view view view" "prev status next";
+    row-gap: 8px;
   }
-  .carousel__viewport {
-    width: 100%;
-    height: calc(var(--card-h) * 2);
-    touch-action: pan-x; /* el swipe vertical lo toma el carrusel */
-  }
-  .carousel__nav svg { transform: rotate(90deg); }
+  .carousel__viewport { grid-area: view; height: calc(var(--card-h) + 24px); }
+  .carousel__nav--prev { grid-area: prev; }
+  .carousel__nav--next { grid-area: next; }
+  .carousel__status { grid-area: status; grid-column: auto; margin: 0; }
   .carousel .cat-card { padding: 16px; gap: 8px; }
   .cat-card__title { font-size: 0.98rem; }
   .carousel .cat-card__actions { padding-top: 8px; }
-  .carousel .cat-card[data-pos="-1"] { transform: translateY(-58%) scale(0.78); }
-  .carousel .cat-card[data-pos="1"]  { transform: translateY(58%) scale(0.78); }
-  .carousel .cat-card[data-pos="-2"] { transform: translateY(-100%) scale(0.6); }
-  .carousel .cat-card[data-pos="2"]  { transform: translateY(100%) scale(0.6); }
+  .carousel .cat-card[data-pos="-1"] { transform: translateX(-66%) scale(0.8); }
+  .carousel .cat-card[data-pos="1"]  { transform: translateX(66%) scale(0.8); }
+  .carousel .cat-card[data-pos="-2"] { transform: translateX(-120%) scale(0.6); }
+  .carousel .cat-card[data-pos="2"]  { transform: translateX(120%) scale(0.6); }
 }
 
 @media (prefers-reduced-motion: reduce) {
